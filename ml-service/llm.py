@@ -14,7 +14,7 @@ _client = None
 def _get_client():
     global _client
     if _client is None:
-        # max_retries=0
+        # max_retries=0 
         _client = Groq(api_key=config.GROQ_API_KEY, max_retries=0, timeout=30.0)
     return _client
 
@@ -111,6 +111,33 @@ def _mock(text: str) -> dict:
             "explanation": "Mock mode: no obvious red flags.", "redFlags": []}
 
 
+def _is_reasoning_model(model: str) -> bool:
+    return "gpt-oss" in model
+
+
+def _call_model(model: str, prompt: str) -> dict:
+    kwargs = dict(
+        model=model,
+        messages=[{"role": "system", "content": SYSTEM_PROMPT},
+                  {"role": "user", "content": prompt}],
+        temperature=0.2,
+        max_tokens=config.MAX_COMPLETION_TOKENS,
+    )
+    if _is_reasoning_model(model):
+        # extra_body 
+        kwargs["extra_body"] = {"reasoning_effort": config.REASONING_EFFORT}
+    client = _get_client()
+    try:
+        resp = client.chat.completions.create(**kwargs, response_format={"type": "json_object"})
+    except Exception as e:  # noqa: BLE001
+        if getattr(e, "status_code", None) == 400:
+            log.warning("%s rejected JSON mode, retrying without it: %s", model, e)
+            resp = client.chat.completions.create(**kwargs)
+        else:
+            raise
+    return _extract_json(resp.choices[0].message.content)
+
+
 def assess(text: str, url: str, features: dict):
     """Returns (normalised_result, model_name). Raises RateLimited / LLMError."""
     if config.MOCK_LLM:
@@ -126,15 +153,7 @@ def assess(text: str, url: str, features: dict):
     for model in config.GROQ_MODELS:
         try:
             log.info("Calling Groq model %s", model)
-            resp = _get_client().chat.completions.create(
-                model=model,
-                messages=[{"role": "system", "content": SYSTEM_PROMPT},
-                          {"role": "user", "content": prompt}],
-                temperature=0.2,
-                max_tokens=400,
-                response_format={"type": "json_object"},
-            )
-            return _normalise(_extract_json(resp.choices[0].message.content)), model
+            return _normalise(_call_model(model, prompt)), model
         except Exception as e:  # noqa: BLE001
             if _is_rate_limit(e):
                 log.warning("%s rate limited, trying next model", model)
