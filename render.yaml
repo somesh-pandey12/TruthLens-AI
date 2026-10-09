@@ -1,0 +1,40 @@
+services:
+  - type: web
+    name: verifyai-ml
+    runtime: python
+    rootDir: ml-service
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --timeout 90 --workers 1 --threads 4
+    healthCheckPath: /health
+    envVars:
+      - key: GROQ_API_KEY
+        sync: false
+      - key: ML_API_KEY
+        sync: false
+      - key: GROQ_MODELS
+        value: llama-3.3-70b-versatile,llama-3.1-8b-instant
+      - key: PYTHON_VERSION
+        value: 3.11.9
+
+  - type: web
+    name: verifyai-api
+    runtime: node
+    rootDir: server
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGO_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: CLIENT_URL
+        sync: false
+      - key: ML_SERVICE_URL
+        sync: false
+      - key: ML_API_KEY
+        sync: false
+      - key: RENDER_EXTERNAL_URL
+        sync: false
