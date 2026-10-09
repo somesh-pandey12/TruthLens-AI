@@ -1,25 +1,25 @@
 import { createContext, useContext, useEffect, useState, useCallback } from 'react';
-import { getMe } from '../api/client.js';
+import { getMe, tokenStore } from '../api/client.js';
 
 const AuthContext = createContext(null);
 export const useAuth = () => useContext(AuthContext);
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(!!localStorage.getItem('token'));
+  const [loading, setLoading] = useState(!!tokenStore.get());
 
   const logout = useCallback(() => {
-    localStorage.removeItem('token');
+    tokenStore.clear();
     setUser(null);
   }, []);
 
   const loginSuccess = useCallback((token, userData) => {
-    localStorage.setItem('token', token);
+    tokenStore.set(token);
     setUser(userData);
   }, []);
 
   useEffect(() => {
-    if (!localStorage.getItem('token')) return;
+    if (!tokenStore.get()) return;
     getMe()
       .then((res) => setUser(res.data.user))
       .catch(logout)

@@ -18,7 +18,6 @@ exports.requireAuth = (req, res, next) => {
   }
 };
 
-// Login optional
 exports.optionalAuth = (req, res, next) => {
   const token = readToken(req);
   if (token) {

@@ -3,33 +3,46 @@
 @tailwind utilities;
 
 @layer base {
-  body {
-    @apply bg-ink font-sans text-slate-100 antialiased;
+  html {
+    @apply bg-slate-50 text-slate-900 antialiased;
   }
-  a {
-    @apply text-indigo-300 hover:text-indigo-200;
+  body {
+    @apply font-sans text-[15px] leading-relaxed;
+  }
+  h1, h2, h3 {
+    @apply tracking-tight;
   }
 }
+
 @layer components {
   .card {
-    @apply mt-4 rounded-2xl border border-line bg-surface p-5;
+    @apply rounded-xl border border-slate-200 bg-white shadow-sm;
   }
   .btn {
-    @apply inline-flex items-center justify-center rounded-xl px-4 py-2 text-sm font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-50;
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
   }
   .btn-primary {
-    @apply bg-brand hover:bg-brand-dark;
+    @apply bg-brand-700 text-white hover:bg-brand-800;
   }
-  .btn-ghost {
-    @apply border border-line bg-transparent text-slate-100 hover:bg-line;
+  .btn-secondary {
+    @apply border border-slate-300 bg-white text-slate-700 hover:bg-slate-50;
+  }
+  .btn-danger {
+    @apply border border-red-200 bg-white text-red-700 hover:bg-red-50;
   }
   .input {
-    @apply mt-1.5 w-full rounded-xl border border-line bg-ink px-3 py-2.5 text-slate-100 placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-brand;
+    @apply block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-brand-600 focus:outline-none focus:ring-1 focus:ring-brand-600;
   }
-  .badge {
-    @apply inline-block rounded-full px-3 py-1 text-xs font-bold text-white;
+  .label {
+    @apply mb-1.5 block text-sm font-medium text-slate-700;
   }
-  .error-box {
-    @apply mt-3 rounded-xl border border-red-900 bg-red-950/60 px-3 py-2 text-sm text-red-300;
+  .link {
+    @apply font-medium text-brand-700 hover:text-brand-800 hover:underline;
+  }
+  .section-title {
+    @apply text-xs font-semibold uppercase tracking-wide text-slate-500;
+  }
+  .alert-error {
+    @apply rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800;
   }
 }

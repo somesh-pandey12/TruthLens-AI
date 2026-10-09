@@ -62,8 +62,12 @@ def analyze():
         logging.getLogger("api").exception("Unexpected error")
         return jsonify({"error": "internal_error"}), 500
 
+    truth = None
+    if config.ENABLE_FACTCHECK and result["verdict"] in ("FAKE", "UNCERTAIN"):
+        truth = llm.fact_check(text, result)
+
     payload = {**result, "sentiment": features["sentiment"],
-               "subjectivity": features["subjectivity"], "model": model}
+               "subjectivity": features["subjectivity"], "model": model, "truth": truth}
     cache.set(key, payload)
     return jsonify({**payload, "cached": False})
 

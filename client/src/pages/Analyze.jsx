@@ -1,14 +1,19 @@
 import { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { Loader2, ScanSearch } from 'lucide-react';
 import { analyzeText, errorMessage } from '../api/client.js';
-import ResultCard from '../components/ResultCard.jsx';
+import { useAuth } from '../context/AuthContext.jsx';
+import PageHeader from '../components/PageHeader.jsx';
+import ResultPanel from '../components/ResultPanel.jsx';
 
-const EXAMPLES = [
-  'Scientists discover that drinking coffee every morning extends life by 20 years, according to a new Harvard study.',
-  'The government announced new tax relief measures for small businesses effective from next month.',
-  'BREAKING: Aliens have landed in Times Square and world leaders are meeting secretly. Share before they delete this!',
+const SAMPLES = [
+  ['Health claim', 'Scientists discover that drinking coffee every morning extends life by 20 years, according to a new Harvard study.'],
+  ['Policy news', 'The government announced new tax relief measures for small businesses effective from next month.'],
+  ['Viral post', 'BREAKING: Aliens have landed in Times Square and world leaders are meeting secretly. Share before they delete this!'],
 ];
 
 export default function Analyze() {
+  const { user } = useAuth();
   const [text, setText] = useState('');
   const [url, setUrl] = useState('');
   const [result, setResult] = useState(null);
@@ -18,15 +23,18 @@ export default function Analyze() {
   const inFlight = useRef(false);
 
   useEffect(() => {
-    if (cooldown <= 0) return;
+    if (cooldown <= 0) return undefined;
     const t = setTimeout(() => setCooldown((c) => c - 1), 1000);
     return () => clearTimeout(t);
   }, [cooldown]);
 
-  const submit = async () => {
+  const submit = async (e) => {
+    e.preventDefault();
     if (inFlight.current || cooldown > 0) return;
-    if (text.trim().length < 20) return setError('Please enter at least 20 characters.');
-
+    if (text.trim().length < 20) {
+      setError('Enter at least 20 characters so there is enough to assess.');
+      return;
+    }
     inFlight.current = true;
     setError('');
     setResult(null);
@@ -36,7 +44,7 @@ export default function Analyze() {
       setResult(data);
     } catch (err) {
       if (err.response?.status === 429) setCooldown(Number(err.response.data?.retryAfter) || 30);
-      setError(errorMessage(err, 'Analysis failed. Please try again.'));
+      setError(errorMessage(err, 'The analysis failed. Please try again.'));
     } finally {
       setLoading(false);
       inFlight.current = false;
@@ -47,49 +55,50 @@ export default function Analyze() {
 
   return (
     <>
-      <h1 className="text-3xl font-bold">Analyze content</h1>
-      <p className="text-muted">Paste a news article, headline, or social media post.</p>
+      <PageHeader title="New analysis" description="Paste a headline, article excerpt or social media post to assess its credibility." />
 
-      <div className="grid items-start gap-4 md:grid-cols-3">
-        <div className="card md:col-span-2">
-          <div className="mb-2 flex justify-between">
-            <strong>Content</strong>
-            <span className="text-sm text-muted">{text.length} / 5000</span>
-          </div>
-          <textarea
-            className="input mb-3 min-h-[200px] resize-y"
-            maxLength={5000}
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            placeholder="Paste text here…"
-          />
-          <label className="text-sm text-muted">Source URL (optional)
-            <input className="input" value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://example.com/article" />
-          </label>
-          {error && <p className="error-box">{error}</p>}
-          {loading && <p className="mt-3 text-sm text-muted">⏳ Analyzing… the first request after idle can take up to a minute.</p>}
-          <button className="btn btn-primary mt-4 w-full py-3" onClick={submit} disabled={busy}>
-            {loading ? 'Analyzing…' : cooldown > 0 ? `Try again in ${cooldown}s` : 'Analyze now'}
+      <form onSubmit={submit} className="card p-6">
+        <div className="flex items-center justify-between">
+          <label htmlFor="content" className="label !mb-0">Content to check</label>
+          <span className="text-xs text-slate-400">{text.length} / 5000</span>
+        </div>
+        <textarea
+          id="content" className="input mt-2 min-h-[180px] resize-y leading-relaxed" maxLength={5000}
+          value={text} onChange={(e) => setText(e.target.value)} placeholder="Paste the text here…"
+        />
+        <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500">
+          <span>Try a sample:</span>
+          {SAMPLES.map(([label, sample]) => (
+            <button key={label} type="button" className="link text-xs" onClick={() => { setText(sample); setResult(null); setError(''); }}>{label}</button>
+          ))}
+        </div>
+
+        <div className="mt-5">
+          <label htmlFor="url" className="label">Source link <span className="font-normal text-slate-400">(optional)</span></label>
+          <input id="url" className="input" value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://example.com/article" />
+        </div>
+
+        {error && <p className="alert-error mt-4" role="alert">{error}</p>}
+
+        <div className="mt-5 flex flex-wrap items-center gap-4">
+          <button className="btn btn-primary px-5 py-2.5" disabled={busy}>
+            {loading ? <Loader2 size={16} className="animate-spin" /> : <ScanSearch size={16} />}
+            {loading ? 'Analyzing…' : cooldown > 0 ? `Try again in ${cooldown}s` : 'Analyze'}
           </button>
+          {loading && <span className="text-sm text-slate-500">This can take up to 30 seconds while sources are checked.</span>}
         </div>
+      </form>
 
-        <div className="card">
-          <strong>Try an example</strong>
-          <div className="mt-3 flex flex-col gap-2">
-            {EXAMPLES.map((ex, i) => (
-              <button
-                key={i}
-                className="rounded-xl border border-line bg-ink p-2.5 text-left text-sm hover:border-brand"
-                onClick={() => { setText(ex); setResult(null); setError(''); }}
-              >
-                {ex.slice(0, 80)}…
-              </button>
-            ))}
-          </div>
+      {result && (
+        <div className="mt-6">
+          <ResultPanel result={result} />
+          {!user && (
+            <p className="mt-4 text-sm text-slate-600">
+              <Link to="/register" className="link">Create a free account</Link> to keep results in your history.
+            </p>
+          )}
         </div>
-      </div>
-
-      {result && <ResultCard result={result} />}
+      )}
     </>
   );
 }

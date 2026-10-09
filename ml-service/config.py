@@ -22,5 +22,11 @@ CACHE_TTL_SECONDS = int(os.getenv("CACHE_TTL_SECONDS", "3600"))
 CACHE_MAX_ITEMS = int(os.getenv("CACHE_MAX_ITEMS", "300"))
 MAX_TEXT_CHARS = 2000
 
+ENABLE_FACTCHECK = _bool("ENABLE_FACTCHECK", "true")
+FACTCHECK_MODELS = [
+    m.strip()
+    for m in os.getenv("FACTCHECK_MODELS", "groq/compound-mini,openai/gpt-oss-120b").split(",")
+    if m.strip()
+]
 MAX_COMPLETION_TOKENS = int(os.getenv("MAX_COMPLETION_TOKENS", "1200"))
 REASONING_EFFORT = os.getenv("REASONING_EFFORT", "low")  # low | medium | high

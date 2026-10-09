@@ -12,6 +12,7 @@ const analysisSchema = new mongoose.Schema(
     subjectivity: { type: Number },
     explanation: { type: String, default: '' },
     redFlags: { type: [String], default: [] },
+    truth: { type: mongoose.Schema.Types.Mixed, default: null },
   },
   { timestamps: true }
 );

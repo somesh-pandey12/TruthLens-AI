@@ -15,7 +15,6 @@ exports.analyze = async (text, url) => {
   } catch (err) {
     const status = err.response?.status;
     const body = err.response?.data;
-
     if (body?.error === 'ai_unavailable') {
       console.error('ML service reported AI failure:', body.details);
       throw new ApiError(

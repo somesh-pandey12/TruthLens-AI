@@ -1,10 +1,12 @@
+# Render Blueprint: dono backend services ek saath deploy hoti hain.
+# Secrets (sync: false) Render dashboard mein manually daalne hain.
 services:
   - type: web
-    name: verifyai-ml
+    name: truthlens-ml
     runtime: python
     rootDir: ml-service
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --timeout 90 --workers 1 --threads 4
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --timeout 120 --workers 1 --threads 4
     healthCheckPath: /health
     envVars:
       - key: GROQ_API_KEY
@@ -12,12 +14,14 @@ services:
       - key: ML_API_KEY
         sync: false
       - key: GROQ_MODELS
-        value: llama-3.3-70b-versatile,llama-3.1-8b-instant
+        value: openai/gpt-oss-120b,openai/gpt-oss-20b
+      - key: FACTCHECK_MODELS
+        value: groq/compound-mini,openai/gpt-oss-120b
       - key: PYTHON_VERSION
         value: 3.11.9
 
   - type: web
-    name: verifyai-api
+    name: truthlens-api
     runtime: node
     rootDir: server
     buildCommand: npm install

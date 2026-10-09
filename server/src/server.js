@@ -7,6 +7,7 @@ async function start() {
   app.listen(env.port, () => {
     console.log(`Server running on port ${env.port} (${env.isProd ? 'production' : 'development'})`);
     console.log(`Allowed origins: ${env.clientUrls.join(', ')}`);
+
     if (env.selfUrl && env.isProd) {
       setInterval(() => {
         fetch(`${env.selfUrl}/health`).catch((e) => console.warn('Self-ping failed:', e.message));

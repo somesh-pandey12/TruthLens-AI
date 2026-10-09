@@ -4,7 +4,7 @@ from collections import OrderedDict
 
 
 class TTLCache:
-    """Thread-safe LRU cache with expiry."""
+    """Thread-safe LRU cache with expiry. Same text dobara aaye to LLM call bachti hai."""
 
     def __init__(self, max_items=300, ttl=3600):
         self.max_items = max_items
