@@ -13,6 +13,10 @@ if (isProd && process.env.JWT_SECRET.length < 32) {
   process.exit(1);
 }
 
+if (isProd && !process.env.ML_SERVICE_URL) {
+  console.warn('WARNING: ML_SERVICE_URL is not set. Falling back to http://localhost:8000, so /analyze will fail with 503.');
+}
+
 module.exports = {
   isProd,
   port: Number(process.env.PORT) || 5000,
