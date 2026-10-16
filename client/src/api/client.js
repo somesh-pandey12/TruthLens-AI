@@ -9,7 +9,7 @@ export const tokenStore = {
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000',
-  timeout: 90000, 
+  timeout: 150000, 
 });
 
 api.interceptors.request.use((config) => {
@@ -30,6 +30,8 @@ api.interceptors.response.use(
 );
 
 const timeZone = () => Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+
+export const warmup = () => api.get('/api/analysis/warmup', { timeout: 15000 }).catch(() => {});
 
 export const register = (data) => api.post('/api/auth/register', data);
 export const login = (data) => api.post('/api/auth/login', data);

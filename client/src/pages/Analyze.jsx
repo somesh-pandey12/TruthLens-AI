@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Loader2, ScanSearch } from 'lucide-react';
-import { analyzeText, errorMessage } from '../api/client.js';
+import { analyzeText, warmup, errorMessage } from '../api/client.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import PageHeader from '../components/PageHeader.jsx';
 import ResultPanel from '../components/ResultPanel.jsx';
@@ -21,6 +21,8 @@ export default function Analyze() {
   const [error, setError] = useState('');
   const [cooldown, setCooldown] = useState(0);
   const inFlight = useRef(false);
+
+  useEffect(() => { warmup(); }, []);
 
   useEffect(() => {
     if (cooldown <= 0) return undefined;
@@ -43,7 +45,7 @@ export default function Analyze() {
       const { data } = await analyzeText({ text: text.trim(), url: url.trim() });
       setResult(data);
     } catch (err) {
-      if (err.response?.status === 429) setCooldown(Number(err.response.data?.retryAfter) || 30);
+      if ([429, 503].includes(err.response?.status)) setCooldown(Number(err.response.data?.retryAfter) || 30);
       setError(errorMessage(err, 'The analysis failed. Please try again.'));
     } finally {
       setLoading(false);
