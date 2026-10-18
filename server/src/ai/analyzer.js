@@ -71,6 +71,7 @@ async function chat(model, system, user, { temperature = 0.2, maxTokens = cfg.ma
   }
   throw lastErr;
 }
+
 async function runChain(list, attempt, budgetMs) {
   const started = Date.now();
   let lastErr = null;
@@ -142,12 +143,14 @@ async function factCheck(text, assessment) {
     return value;
   } catch (e) {
     return null; 
+  }
 }
 
 // ----------------------------------------------------------------------------- public API
 function degraded(text, reason) {
   return { ...wordingCheck(text), model: 'heuristic', truth: null, degraded: true, degradedReason: reason, cached: false };
 }
+
 exports.analyze = async (rawText, rawUrl = '') => {
   const text = String(rawText || '').replace(/https?:\/\/\S+/g, '').trim().slice(0, cfg.maxChars);
   const url = String(rawUrl || '').slice(0, 500);
