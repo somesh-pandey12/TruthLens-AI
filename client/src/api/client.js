@@ -21,7 +21,7 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (res) => res,
   (err) => {
-    // Token expire/invalid 
+    // Token expire/invalid
     if (err.response?.status === 401 && tokenStore.get()) {
       window.dispatchEvent(new Event('auth:expired'));
     }
@@ -31,7 +31,7 @@ api.interceptors.response.use(
 
 const timeZone = () => Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
 
-export const warmup = () => api.get('/api/analysis/warmup', { timeout: 15000 }).catch(() => {});
+export const ping = () => api.get('/health', { timeout: 15000 }).catch(() => {});
 
 export const register = (data) => api.post('/api/auth/register', data);
 export const login = (data) => api.post('/api/auth/login', data);

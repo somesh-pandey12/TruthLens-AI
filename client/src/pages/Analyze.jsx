@@ -1,10 +1,17 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Loader2, ScanSearch } from 'lucide-react';
-import { analyzeText, warmup, errorMessage } from '../api/client.js';
+import { analyzeText, ping, errorMessage } from '../api/client.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import PageHeader from '../components/PageHeader.jsx';
 import ResultPanel from '../components/ResultPanel.jsx';
+
+const DEGRADED_NOTICE = {
+  rate_limited: 'The AI service has reached its usage limit for now.',
+  auth: 'The AI service is not configured correctly yet.',
+  not_configured: 'The AI service is not configured yet.',
+  unavailable: 'The AI service is temporarily unavailable.',
+};
 
 const SAMPLES = [
   ['Health claim', 'Scientists discover that drinking coffee every morning extends life by 20 years, according to a new Harvard study.'],
@@ -22,7 +29,7 @@ export default function Analyze() {
   const [cooldown, setCooldown] = useState(0);
   const inFlight = useRef(false);
 
-  useEffect(() => { warmup(); }, []);
+  useEffect(() => { ping(); }, []);
 
   useEffect(() => {
     if (cooldown <= 0) return undefined;
@@ -93,6 +100,11 @@ export default function Analyze() {
 
       {result && (
         <div className="mt-6">
+          {result.degraded && (
+            <p className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800" role="status">
+              {DEGRADED_NOTICE[result.degradedReason] || DEGRADED_NOTICE.unavailable} Showing a basic wording check only. It cannot confirm whether the claim is true, so please try again in a few minutes.
+            </p>
+          )}
           <ResultPanel result={result} />
           {!user && (
             <p className="mt-4 text-sm text-slate-600">

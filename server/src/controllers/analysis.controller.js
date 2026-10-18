@@ -1,7 +1,7 @@
 const { z } = require('zod');
 const mongoose = require('mongoose');
 const Analysis = require('../models/Analysis');
-const mlService = require('../services/ml.service');
+const analyzer = require('../ai/analyzer');
 const ApiError = require('../utils/ApiError');
 
 const VERDICTS = ['REAL', 'FAKE', 'UNCERTAIN'];
@@ -13,10 +13,11 @@ exports.analyzeSchema = z.object({
 
 exports.analyze = async (req, res) => {
   const { text, url } = req.body;
-  const result = await mlService.analyze(text, url);
+  const result = await analyzer.analyze(text, url);
 
   let saved = false;
-  if (req.user) {
+
+  if (req.user && !result.degraded) {
     try {
       await Analysis.create({
         user: req.user.id,
