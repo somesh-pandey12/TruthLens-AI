@@ -1,10 +1,8 @@
-import { Navigate, useLocation } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 
 export default function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
-  const location = useLocation();
-  if (loading) return <div className="card text-center text-muted">Loading…</div>;
-  if (!user) return <Navigate to="/login" state={{ from: location.pathname }} replace />;
-  return children;
+  if (loading) return <p className="py-24 text-center text-sm text-slate-500">Loading…</p>;
+  return user ? children : <Navigate to="/login" replace />;
 }

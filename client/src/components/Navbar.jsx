@@ -1,39 +1,40 @@
-import { NavLink, Link, useNavigate } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
+import { LogOut } from 'lucide-react';
+import Logo from './Logo.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 
-const linkClass = ({ isActive }) =>
-  `text-sm ${isActive ? 'font-semibold text-white' : 'text-slate-300 hover:text-white'}`;
+const link = ({ isActive }) =>
+  `rounded-lg px-3 py-1.5 text-sm font-medium transition ${isActive ? 'bg-slate-100 text-slate-900' : 'text-slate-600 hover:text-slate-900'}`;
 
 export default function Navbar() {
   const { user, logout } = useAuth();
-  const navigate = useNavigate();
-
-  const handleLogout = () => {
-    logout();
-    navigate('/');
-  };
 
   return (
-    <header className="sticky top-0 z-10 border-b border-line bg-ink/85 backdrop-blur">
-      <div className="mx-auto flex max-w-5xl items-center justify-between px-5 py-3">
-        <Link to="/" className="text-xl font-extrabold text-white hover:text-white">
-          ✔ Verify<span className="text-brand">AI</span>
-        </Link>
-        <nav className="flex items-center gap-4">
-          <NavLink to="/analyze" className={linkClass}>Analyze</NavLink>
-          {user && <NavLink to="/history" className={linkClass}>History</NavLink>}
+    <header className="sticky top-0 z-30 border-b border-slate-200/70 bg-white/80 backdrop-blur">
+      <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-4">
+        <div className="flex items-center gap-6">
+          <Link to="/"><Logo className="text-lg text-slate-900" /></Link>
+          <nav className="hidden items-center gap-1 sm:flex">
+            <NavLink to="/" end className={link}>Analyze</NavLink>
+            {user && <NavLink to="/history" className={link}>History</NavLink>}
+          </nav>
+        </div>
+
+        <div className="flex items-center gap-2">
           {user ? (
             <>
-              <span className="hidden text-sm text-muted sm:inline">Hi, {user.name.split(' ')[0]}</span>
-              <button className="btn btn-ghost" onClick={handleLogout}>Logout</button>
+              <span className="hidden text-sm text-slate-600 sm:block">Hi, {user.name.split(' ')[0]}</span>
+              <button onClick={logout} className="btn-ghost !px-3 !py-2" title="Sign out">
+                <LogOut size={16} /> <span className="hidden sm:inline">Sign out</span>
+              </button>
             </>
           ) : (
             <>
-              <NavLink to="/login" className={linkClass}>Login</NavLink>
-              <Link to="/register" className="btn btn-primary hover:text-white">Sign up</Link>
+              <Link to="/login" className="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 hover:text-slate-900">Sign in</Link>
+              <Link to="/register" className="btn-primary !py-2">Create account</Link>
             </>
           )}
-        </nav>
+        </div>
       </div>
     </header>
   );

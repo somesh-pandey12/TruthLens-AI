@@ -1,22 +1,25 @@
 const mongoose = require('mongoose');
 
+const sourceSchema = new mongoose.Schema(
+  { title: String, url: String, domain: String, stance: String },
+  { _id: false }
+);
+
 const analysisSchema = new mongoose.Schema(
   {
     user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
-    inputText: { type: String, required: true },
+    inputText: { type: String, default: '' },
     sourceUrl: { type: String, default: '' },
-    verdict: { type: String, enum: ['REAL', 'FAKE', 'UNCERTAIN'], default: 'UNCERTAIN' },
-    reliabilityScore: { type: Number, min: 0, max: 100 },
-    confidence: { type: Number, min: 0, max: 100 },
-    sentiment: { type: String, default: 'NEUTRAL' },
-    subjectivity: { type: Number },
-    explanation: { type: String, default: '' },
-    redFlags: { type: [String], default: [] },
-    truth: { type: mongoose.Schema.Types.Mixed, default: null },
+    claim: String,
+    verdict: { type: String, enum: ['TRUE', 'FALSE', 'MISLEADING', 'UNVERIFIED'], required: true },
+    score: Number,
+    confidence: Number,
+    summary: String,
+    tone: String,
+    redFlags: [String],
+    sources: [sourceSchema],
   },
   { timestamps: true }
 );
-
-analysisSchema.index({ user: 1, createdAt: -1 });
 
 module.exports = mongoose.model('Analysis', analysisSchema);
