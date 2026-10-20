@@ -12,7 +12,12 @@ const env = {
     .map(clean)
     .filter(Boolean),
   groqKey: (process.env.GROQ_API_KEY || '').trim(),
-  groqModel: (process.env.GROQ_MODEL || 'llama-3.3-70b-versatile').trim(),
+
+  groqModels: (process.env.GROQ_MODEL || 'openai/gpt-oss-120b,qwen/qwen3.6-27b,openai/gpt-oss-20b')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean),
+  get groqModel() { return this.groqModels[0]; },
   tavilyKey: (process.env.TAVILY_API_KEY || '').trim(),
   selfUrl: clean(process.env.RENDER_EXTERNAL_URL),
 };
