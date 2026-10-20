@@ -13,7 +13,6 @@ app.use(helmet());
 
 // "https://x.vercel.app/" and "https://x.vercel.app" should both match
 const allowedOrigins = (env.clientUrls || []).map((u) => String(u).trim().replace(/\/+$/, ''));
-
 app.use(
   cors({
     origin: (origin, cb) => {
